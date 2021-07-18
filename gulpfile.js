@@ -13,6 +13,8 @@ const browserify = require('browserify');
 const watchify = require('watchify');
 const uglify = require('gulp-uglify');
 const replace = require('gulp-replace');
+const babel = require('gulp-babel');
+const del = require('del');
 
 const parallel = gulp.parallel;
 const series = gulp.series;
@@ -31,7 +33,7 @@ function lib() {
   bundler.transform(reactify);
   bundler.transform(brfs);
 
-  bundler.on('update', rebundle);
+  // bundler.on('update', rebundle);
 
   function rebundle() {
     console.log('rebundling');
@@ -41,11 +43,20 @@ function lib() {
         console.log(err.message);
       })
       .pipe(source('main.js'))
-      .pipe(gulp.dest('./dist/js'))
-      .pipe(connect.reload());
+      .pipe(gulp.dest('./dist/js'));
   }
 
   return rebundle();
+}
+function javascript() {
+  return gulp
+    .src(['./lib/**/*.js', './lib/**/*.jsx'])
+    .pipe(
+      babel({
+        presets: ['@babel/preset-env', 'react'],
+      }),
+    )
+    .pipe(gulp.dest('dist/js'));
 }
 function minify() {
   return gulp.src('./dist/js/*').pipe(uglify()).pipe(gulp.dest('./dist/js'));
@@ -55,16 +66,14 @@ function css() {
     .src('./stylesheets/main.scss')
     .pipe(sass({ errLogToConsole: true, outputStyle: 'compressed' }))
     .pipe(autoprefixer())
-    .pipe(gulp.dest('./dist/css'))
-    .pipe(connect.reload());
+    .pipe(gulp.dest('./dist/css'));
 }
 
 function setVersion() {
   return gulp
     .src('./dist/index.html')
     .pipe(replace(/\?v=([\w\.]+)/g, '?v=' + require('./package.json').version))
-    .pipe(gulp.dest('./dist/'))
-    .pipe(connect.reload());
+    .pipe(gulp.dest('./dist/'));
 }
 
 function schemes() {
@@ -87,14 +96,22 @@ function schemes() {
   fs.writeFileSync(path.join(source, index), JSON.stringify(output));
 }
 
-function defaultFunc() {
-  // gulp.watch('./stylesheets/**/*.scss', ['style']);
-  // return connect.server({ root: ['dist'], port: 8000, livereload: true });
-}
-exports.default = function () {
+function main() {
   gulp.watch(
     ['stylesheets/*', 'lib/*'],
     { ignoreInitial: false },
     parallel(series(parallel(series(lib, minify), css, setVersion)), schemes),
   );
-};
+}
+
+function clean() {
+  return del(['dist/js', 'dist/css']);
+}
+
+exports.default = main;
+exports.javascript = javascript;
+exports.clean = clean;
+exports.build = parallel(
+  series(parallel(series(javascript, minify), css, setVersion)),
+  schemes,
+);
