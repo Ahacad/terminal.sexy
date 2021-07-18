@@ -4,15 +4,6 @@
 
 ![Screenshot](docs/screenshot.jpg)
 
-## TODOS:
-
-- [ ] update react to v17
-- [ ] use TypeScript
-- [ ] update all dependencies
-- [ ] rewrite without jquery
-- [ ] improve utility tools, add etlint, prettier, github actions, etc.
-- [ ] add badges 
-
 ## Features
 
 ### URL Sharing
