@@ -1,5 +1,7 @@
 # terminal.sexy
 
+![build]( https://img.shields.io/github/workflow/status/ahacad/terminal.sexy/Deploy%20pages?label=deploy )
+
 > Design, edit and share terminal colorschemes.
 
 ![Screenshot](docs/screenshot.jpg)
